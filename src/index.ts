@@ -1,9 +1,23 @@
-import * as JWF from 'javascript-window-framework'
+import *  as JWF from 'javascript-window-framework'
 
-function Sample01(){
+
+/*
+interface Test extends JWF.WINDOW_PARAMS{
+}
+
+class CustomWindow extends JWF.Window{
+	constructor(p:typeof JWF.WINDOW_PARAMS){
+		super(p)
+	}
+}
+*/
+function Sample01() {
+
 	 const win = new JWF.FrameWindow()	//フレームウインドウの作成
 	 win.setTitle('サンプルウインドウ')	//タイトルの設定
 	 win.setPos()						//位置を中心に設定
+	//const  = {}
+
 }
 
 function Main() {

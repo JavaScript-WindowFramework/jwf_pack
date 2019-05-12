@@ -1,7 +1,5 @@
-/// <reference path="./Window.ts" />
-
-namespace JWF{
-	export class TextBox extends Window{
+import * as Window from "./Window"
+export class TextBox extends Window.Window{
 		nodeLabel: HTMLElement
 		nodeText: HTMLInputElement
 		constructor(params?:{text?: string,label?:string,type?:string,image?:string}) {
@@ -54,4 +52,3 @@ namespace JWF{
 			return this.nodeText
 		}
 	}
-}

@@ -1,7 +1,7 @@
-/// <reference path="./Window.ts" />
+import * as Window from "./Window"
 
-namespace JWF{
-	export class CheckBox extends Window{
+
+	export class CheckBox extends Window.Window{
 		nodeText: HTMLSpanElement
 		nodeCheck : HTMLInputElement
 		constructor(params?:{text?: string,checked?:boolean}) {
@@ -48,4 +48,3 @@ namespace JWF{
 			return this.nodeText
 		}
 	}
-}

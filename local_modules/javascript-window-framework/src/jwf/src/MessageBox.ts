@@ -1,14 +1,14 @@
-/// <reference path="./Window.ts" />
-
-namespace JWF {
+import * as Window from "./Window"
+import * as Label from "./Label"
+import * as Button from "./Button"
 export interface MESSAGEBOX_EVENT_ITEM_CLICK {
 	value: any
 }
-export interface MessageBoxEventMap extends WINDOW_EVENT_MAP {
+export interface MessageBoxEventMap extends Window.WINDOW_EVENT_MAP {
 	"buttonClick": MESSAGEBOX_EVENT_ITEM_CLICK
 }
-export class MessageBox extends FrameWindow{
-	label : JWF.Label
+export class MessageBox extends Window.FrameWindow{
+	label: Label.Label
 	constructor(title:string,msg:string,buttons?:{[key:string]:any}){
 		super()
 		this.setSize(300, 200)
@@ -17,7 +17,7 @@ export class MessageBox extends FrameWindow{
 		this.active()
 		this.setPadding(10, 10, 10, 10)
 
-		const label = new JWF.Label(msg)
+		const label = new Label.Label(msg)
 		this.label = label
 		this.addChild(label,'top')
 		label.setAlign('center')
@@ -27,7 +27,7 @@ export class MessageBox extends FrameWindow{
 			buttons = {'OK':true}
 		}
 		for(let name in buttons){
-			const b = new JWF.Button(name, buttons[name])
+			const b = new Button.Button(name, buttons[name])
 			b.setAlign('center')
 			this.addChild(b, 'top')
 			b.addEventListener('buttonClick',function(){
@@ -43,5 +43,4 @@ export class MessageBox extends FrameWindow{
 	setText(text:string){
 		this.label.setText(text)
 	}
-}
 }

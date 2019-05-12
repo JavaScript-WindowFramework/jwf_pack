@@ -1,7 +1,7 @@
-/// <reference path="./Window.ts" />
+import * as Window from "./Window"
 
-namespace JWF{
-	export class Label extends Window{
+
+export class Label extends Window.Window{
 		nodeText: HTMLSpanElement
 		constructor(text?: string) {
 			super()
@@ -38,4 +38,3 @@ namespace JWF{
 			node.style.justifyContent = style;
 		}
 	}
-}
