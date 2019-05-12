@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"inlineSourceMap": true,
+		"target": "es5",
+		"module": "amd",
+		"composite": true,
+		"declaration": true,
+		"outFile": "../dist/index.js",
+		"outDir": "../dist/",
+		"rootDir": "./",
+		"lib": [
+			"es2017",
+			"dom"
+		]
+	},
+	"include": [
+		"./jwf/src/*.ts",
+		"./*.ts"
+	],
+	"typedocOptions": {
+		"name": "JWF",
+		"json": "../doc/document.json",
+		"mode": "file",
+		"includeDeclarations": false,
+		"hideGenerator": false
+	}
+}
