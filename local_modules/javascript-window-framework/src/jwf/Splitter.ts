@@ -1,12 +1,12 @@
-import * as Window from "./Window"
+import { Window,MovePoint } from "./Window"
 
 
 export interface JWFSPLITDATA {
 	splitterThick: number
 	splitterPos: number
 	splitterType: string
-	splitter: Window.Window
-	childList: Window.Window[]
+	splitter: Window
+	childList: Window[]
 	pos?: number
 	type?: string
 	drawerMode: boolean
@@ -22,7 +22,7 @@ export interface JWFSPLITDATA {
  * @class Splitter
  * @extends {Window}
  */
-export class Splitter extends Window.Window {
+export class Splitter extends Window {
 	JDataSplit: JWFSPLITDATA = {
 		drawerMode: false,
 		drawerModeNow: false,
@@ -51,7 +51,7 @@ export class Splitter extends Window.Window {
 		}
 		const client = this.getClient()
 		client.dataset.splitterType = this.JDataSplit.splitterType
-		this.JDataSplit.childList = [new Window.Window(), new Window.Window()]
+		this.JDataSplit.childList = [new Window(), new Window()]
 		super.addChild(this.JDataSplit.childList[0])
 		super.addChild(this.JDataSplit.childList[1])
 
@@ -74,7 +74,7 @@ export class Splitter extends Window.Window {
 			icon.style.display = 'none'
 		})
 
-		let splitter = new Window.Window()
+		let splitter = new Window()
 		this.JDataSplit.splitter = splitter
 		splitter.setJwfStyle('Splitter')
 		splitter.setOrderTop(true)
@@ -85,7 +85,7 @@ export class Splitter extends Window.Window {
 		let handle = null
 		splitter.getNode().addEventListener("move", function (e: any) {
 
-			let p = e.params as Window.MovePoint
+			let p = e.params as MovePoint
 			let width = that.getClientWidth()
 			let height = that.getClientHeight()
 			const JDataSplit = that.JDataSplit
@@ -286,7 +286,7 @@ export class Splitter extends Window.Window {
 	 * @returns {Window} 子ウインドウ
 	 * @memberof Splitter
 	 */
-	getChild(index: number): Window.Window {
+	getChild(index: number): Window {
 		return this.JDataSplit.childList[index]
 	}
 

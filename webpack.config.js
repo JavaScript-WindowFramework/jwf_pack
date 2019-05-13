@@ -14,13 +14,17 @@ module.exports = {
 	devtool: 'source-map',
 	module: {
 		rules: [{
-			test: /\.js$/,
-			use: ["source-map-loader"],
-			enforce: "pre"
-		},
-		{
-			test: /\.ts|\.tsx$/,
-			use: 'ts-loader'
-		}]
+				test: /\.js$/,
+				use: ["source-map-loader"],
+				enforce: "pre"
+			},
+			{
+				test: /\.ts|\.tsx$/,
+				use: 'ts-loader'
+			}
+		]
+	},
+	resolve: {
+		moduleExtensions: ['node_modules', path.resolve(__dirname, 'local_modules', 'framework')]
 	}
 };

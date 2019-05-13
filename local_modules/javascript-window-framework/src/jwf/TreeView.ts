@@ -1,4 +1,4 @@
-import * as Window from "./Window"
+import { Window, WINDOW_EVENT_MAP} from "./Window"
 
 export interface TREEVIEW_EVENT_SELECT {
 	item: TreeItem
@@ -15,7 +15,7 @@ export interface TREEVIEW_EVENT_OPEN {
 	item: TreeItem
 	opened: boolean
 }
-export interface TreeViewEventMap extends Window.WINDOW_EVENT_MAP {
+export interface TreeViewEventMap extends WINDOW_EVENT_MAP {
 	"itemOpen": TREEVIEW_EVENT_OPEN
 	"itemSelect": TREEVIEW_EVENT_SELECT
 	"itemDblClick": TREEVIEW_EVENT_SELECT
@@ -343,7 +343,7 @@ export class TreeItem {
  * @class TreeView
  * @extends {Window}
  */
-export class TreeView extends Window.Window {
+export class TreeView extends Window {
 
 	private mRootItem: TreeItem
 	private mSelectItem: TreeItem

@@ -1,4 +1,4 @@
-import * as Window from "./Window"
+import { Window, WindowManager,MovePoint,WINDOW_EVENT_MAP } from "./Window"
 
 
 export interface LISTVIEW_EVENT_ITEM_CLICK {
@@ -11,7 +11,7 @@ export interface LISTVIEW_EVENT_DRAG_START {
 	subItemIndex: number
 	event: DragEvent
 }
-export interface ListViewEventMap extends Window.WINDOW_EVENT_MAP {
+export interface ListViewEventMap extends WINDOW_EVENT_MAP {
 	"itemClick": LISTVIEW_EVENT_ITEM_CLICK
 	"itemDblClick": LISTVIEW_EVENT_ITEM_CLICK
 	"itemDragStart": LISTVIEW_EVENT_DRAG_START
@@ -23,7 +23,7 @@ export interface ListViewEventMap extends Window.WINDOW_EVENT_MAP {
 * @class ListView
 * @extends {Window}
 */
-export class ListView extends Window.Window {
+export class ListView extends Window {
 	headerArea: HTMLElement
 	headerBack: HTMLElement
 	headers: HTMLElement
@@ -195,9 +195,9 @@ export class ListView extends Window.Window {
 			let resize: any = document.createElement('div')
 			resize.index = index
 			resizers.appendChild(resize)
-			Window.WindowManager.enableMove(resize)
+			WindowManager.enableMove(resize)
 			resize.addEventListener("move", function (e) {
-				let p = e.params as Window.MovePoint
+				let p = e.params as MovePoint
 				let x = p.nodePoint.x + p.nowPoint.x - p.basePoint.x
 				let h = headers.childNodes[this.index] as HTMLElement
 				let width = x - h.offsetLeft

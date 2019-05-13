@@ -1,5 +1,5 @@
-import * as Window from "./Window"
-import * as CalendarView from "./CalendarView"
+import { Window, WINDOW_PARAMS} from "./Window"
+import {CalendarView} from "./CalendarView"
 export interface ITEM_OPTION {
 	label?: string,
 	type?: 'date' | 'textbox' | 'checkbox' | 'select' | 'submit',
@@ -14,11 +14,11 @@ export interface ITEM_OPTION {
 		value: string | number;
 	}[]
 }
-export class TableFormView extends Window.Window {
+export class TableFormView extends Window {
 	table: HTMLDivElement
 	items: HTMLDivElement
 	footer: HTMLDivElement
-	constructor(params?: Window.WINDOW_PARAMS) {
+	constructor(params?: WINDOW_PARAMS) {
 		super(params)
 		this.setJwfStyle('TableFormView')
 		const table = document.createElement('div')
@@ -72,7 +72,7 @@ export class TableFormView extends Window.Window {
 					textDate.value = params.value ? (params.value as Date).toLocaleDateString() : '-'
 					data.appendChild(textDate)
 					textDate.addEventListener('click', () => {
-						const calendar = new CalendarView.CalendarView({ frame: true })
+						const calendar = new CalendarView({ frame: true })
 						calendar.addEventListener('date', (e) => {
 							textDate.value = e.date.toLocaleDateString()
 						})

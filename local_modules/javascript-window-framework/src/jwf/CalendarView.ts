@@ -1,12 +1,12 @@
-import * as Window from "./Window"
+import { Window, WINDOW_PARAMS, WINDOW_EVENT_MAP } from "./Window"
 import * as Libs from "./Libs"
 export interface CALENDARVIEW_EVENT_DATE_CLICK {
 	date: Date
 }
-export interface CalendarViewEventMap extends Window.WINDOW_EVENT_MAP {
+export interface CalendarViewEventMap extends WINDOW_EVENT_MAP {
 	"date": CALENDARVIEW_EVENT_DATE_CLICK
 }
-export class CalendarView extends Window.Window {
+export class CalendarView extends Window {
 	titleCell: HTMLTableDataCellElement
 	dateCells: HTMLTableDataCellElement[]
 	calendarDate: Date = new Date()
@@ -14,7 +14,7 @@ export class CalendarView extends Window.Window {
 	endDate: Date
 	holidays: { [keys: string]: string } = {}
 	selects: { [keys: string]: boolean } = {}
-	constructor(p?: Window.WINDOW_PARAMS) {
+	constructor(p?: WINDOW_PARAMS) {
 		super(p)
 		this.setJwfStyle('CalendarView')
 		const weekString = "日月火水木金土";

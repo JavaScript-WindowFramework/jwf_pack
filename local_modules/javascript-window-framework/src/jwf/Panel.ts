@@ -1,4 +1,4 @@
-import * as Window from "./Window"
+import { Window} from "./Window"
 /**
  *パネル用クラス
 	*
@@ -6,7 +6,7 @@ import * as Window from "./Window"
 	* @class Panel
 	* @extends {Window}
 	*/
-export class Panel extends Window.Window {
+export class Panel extends Window {
 	constructor() {
 		super()
 		this.setJwfStyle('Panel')

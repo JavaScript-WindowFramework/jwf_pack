@@ -6,17 +6,13 @@
 		"composite": true,
 		"declaration": true,
 		//outFile": "../dist/index.js",
-		"outDir": "../dist/",
-		"rootDir": "./jwf/src",
+		"outDir": "../dist",
+		"rootDir": "./jwf",
 		"lib": [
 			"es2017",
 			"dom"
 		]
 	},
-	"include": [
-		"./jwf/src/*.ts",
-//		"./*.ts"
-	],
 	"typedocOptions": {
 		"name": "JWF",
 		"json": "../doc/document.json",
