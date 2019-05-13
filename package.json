@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-jwf": "npx webpack --config ./local_modules/javascript-window-framework/src/webpack.config.js",
-    "build": "npx webpack"
+    "build": "npx webpack",
+	"start":"npx webpack-dev-server"
   },
   "keywords": [],
   "author": "",
