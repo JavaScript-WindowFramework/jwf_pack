@@ -51,13 +51,14 @@ function Sample004() {
 	treeView.getRootItem().setItemText('ルートアイテム')
 
 	//アイテムを作成
-	let item
+	let item:JWF.TreeItem
 	item = treeView.addItem('アイテム1')
 	item.addItem('アイテム1-1')
 	item.addItem('アイテム1-2')
 	item = treeView.addItem('アイテム2')
 	item.addItem('アイテム2-1')
 	item.addItem('アイテム2-2')
+	item.addItem
 
 	//アイテムが選択された場合のイベント
 	treeView.addEventListener('itemSelect', function (e) {
