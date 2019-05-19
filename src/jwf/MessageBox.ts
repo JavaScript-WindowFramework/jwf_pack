@@ -1,6 +1,7 @@
-import { FrameWindow, WINDOW_EVENT_MAP } from "./Window"
+import { WINDOW_EVENT_MAP } from "./Window"
 import {Label} from "./Label"
 import {Button} from "./Button"
+import { FrameWindow } from "./FrameWindow";
 export interface MESSAGEBOX_EVENT_ITEM_CLICK {
 	value: any
 }
@@ -30,7 +31,7 @@ export class MessageBox extends FrameWindow{
 			const b = new Button(name, buttons[name])
 			b.setAlign('center')
 			this.addChild(b, 'top')
-			b.addEventListener('buttonClick',function(){
+			b.addEventListener('buttonClick', function (this: Button){
 				that.callEvent('buttonClick',this.getValue())
 				that.close()
 			}.bind(b))

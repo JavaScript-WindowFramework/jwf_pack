@@ -1,4 +1,8 @@
+import { WindowManager } from "./WindowManager";
 
+//各サイズ
+const FRAME_SIZE = 10	//フレーム枠のサイズ
+const TITLE_SIZE = 24	//タイトルバーのサイズ
 
 /**
  * 位置設定用
@@ -16,6 +20,16 @@ export interface Size {
 }
 
 /**
+ *カスタムイベント用
+ *
+ * @export
+ * @interface JWFEvent
+ * @extends {Event}
+ */
+export interface JWFEvent extends Event{
+	params:any
+}
+/**
  * ドラッグドロップ機能用
  *
  * @export
@@ -26,7 +40,7 @@ export interface Size {
  * @param {Size} nodeSize ノード初期サイズ
  */
 export interface MovePoint {
-	event: MouseEvent
+	event: MouseEvent|TouchEvent
 	basePoint: Point
 	nowPoint: Point
 	nodePoint: Point
@@ -38,213 +52,15 @@ export interface MovePoint {
 * @interface JNode
 * @extends {HTMLElement}
 */
-export interface JNode extends HTMLElement {
+export interface JNode extends HTMLDivElement {
 	Jwf: Window	//ノードを保持しているWindow
 }
-/**
- * ウインドウ等総合管理クラス
- *
- * @export
- * @class Jwf
- */
-export class WindowManager {
-	static nodeX: number
-	static nodeY: number
-	static baseX: number
-	static baseY: number
-	static nodeWidth: number
-	static nodeHeight: number
-	static moveNode: HTMLElement = null
-	static frame: any = null
-	static layoutForced: boolean
-	static layoutHandler
-
-
-
-	/**
-	 * マウスとタッチイベントの座標取得処理
-	 * @param  {MouseEvent|TouchEvent} e
-	 * @returns {Point} マウスの座標
-	 */
-	static getPos(e: MouseEvent | TouchEvent): Point {
-		let p: Point
-		if ((e as TouchEvent).targetTouches && (e as TouchEvent).targetTouches.length) {
-			let touch = (e as TouchEvent).targetTouches[0]
-			p = { x: touch.pageX, y: touch.pageY }
-		} else {
-			p = { x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY }
-		}
-		return p
-	}
-	/**
-	 * 対象ノードに対して移動を許可し、イベントを発生させる
-	 *
-	 * @static
-	 * @param {HTMLElement} node
-	 * @memberof Jwf
-	 */
-	static enableMove(node: HTMLElement) {
-		function mouseDown(e) {
-			if (WindowManager.moveNode == null) {
-				WindowManager.moveNode = node
-				let p = WindowManager.getPos(e)
-				WindowManager.baseX = p.x
-				WindowManager.baseY = p.y
-				WindowManager.nodeX = node.offsetLeft
-				WindowManager.nodeY = node.offsetTop
-				WindowManager.nodeWidth = node.clientWidth
-				WindowManager.nodeHeight = node.clientWidth
-				e.preventDefault()
-				return false;
-			}
-		}
-		node.addEventListener("touchstart", mouseDown, { passive: false })
-		node.addEventListener("mousedown", mouseDown)
-
-	}
-	/**
-	 * ノードに対してイベントを発生させる
-	 *
-	 * @static
-	 * @param {HTMLElement} node 対象ノード
-	 * @param {string} ename イベント名
-	 * @param {*} [params] イベント発生時にevent.paramsの形で送られる
-	 * @memberof Jwf
-	 */
-	static callEvent(node: HTMLElement, ename: string, params?: any) {
-		node.dispatchEvent(WindowManager.createEvent(ename, params))
-	}
-	/**
-	 *イベントを作成する
-		*
-		* @static
-		* @param {string} ename イベント名
-		* @param {*} [params] イベント発生時にevent.paramsの形で送られる
-		* @returns {Event} 作成したイベント
-		* @memberof Jwf
-		*/
-
-	static createEvent(ename: string, params?: any): Event {
-		let event: any
-		if (!!(window as any).MSStream) {
-			event = document.createEvent('CustomEvent')
-			event.initCustomEvent(ename, false, false, null)
-		} else {
-			event = new CustomEvent(ename, null)
-		}
-		event.params = params
-		return event
-	}
-	/**
-	 *ノードを作成する
-		*
-		* @static
-		* @param {string} tagName タグ名
-		* @param {*} [params] タグパラメータ
-		* @returns {HTMLElement} 作成したノード
-		* @memberof Jwf
-		*/
-	static createElement(tagName: string, params?: any): HTMLElement {
-		let tag = document.createElement(tagName)
-		for (let index in params) {
-			let p = params[index]
-			if (typeof p == 'object') {
-				for (let index2 in p)
-					tag[index][index2] = p[index2]
-			} else
-				tag[index] = p
-		}
-		return tag
-	}
-
-	/**
-	 *ウインドウレイアウトの更新要求
-		*実際の処理は遅延非同期で行われる
-		*
-		* @static
-		* @param {boolean} flag	true:全Window強制更新 false:更新の必要があるWindowのみ更新
-		* @memberof Jwf
-		*/
-	static layout(flag: boolean) {
-		WindowManager.layoutForced = WindowManager.layoutForced || flag
-		if (!WindowManager.layoutHandler) {
-			//タイマーによる遅延実行
-			WindowManager.layoutHandler = setTimeout(function () {
-				WindowManager.layoutHandler = null
-				let nodes = document.querySelectorAll("[data-jwf=Window]")
-				let count = nodes.length
-				for (let i = 0; i < count; i++) {
-					let node = nodes[i] as JNode
-					if (!node.Jwf.getParent())
-						node.Jwf.onMeasure(WindowManager.layoutForced)
-					node.Jwf.onLayout(WindowManager.layoutForced)
-				}
-
-				WindowManager.layoutForced = false
-			}, 0)
-		}
-	}
-}
-
-//各イベント設定
-addEventListener("resize", function () { WindowManager.layout(true) })
-addEventListener("mouseup", mouseUp, false)
-addEventListener("touchend", mouseUp, { passive: false })
-addEventListener("mousemove", mouseMove, false)
-addEventListener("touchmove", mouseMove, { passive: false })
-addEventListener("touchstart", mouseDown, { passive: false })
-addEventListener("mousedown", mouseDown, false)
-
-function mouseDown(e: MouseEvent | TouchEvent) {
-	let node = e.target as HTMLElement
-	do {
-		if (node.dataset && node.dataset.jwf === "Window") {
-			return
-		}
-	} while (node = node.parentNode as HTMLElement)
-	deactive()
-	return false
-}
-function deactive() {
-	let activeWindows = document.querySelectorAll('[data-jwf="Window"][data-jwf-active="true"]')
-	for (let i = 0, l = activeWindows.length; i < l; i++) {
-		let w = activeWindows[i] as JNode
-		w.dataset.jwfActive = 'false'
-		w.Jwf.callEvent('active', { active: false })
-	}
-}
-
-//マウスが離された場合に選択をリセット
-function mouseUp() {
-	WindowManager.moveNode = null
-	WindowManager.frame = null
-}
-//マウス移動時の処理
-function mouseMove(e: MouseEvent) {
-	if (WindowManager.moveNode) {
-		let node = WindowManager.moveNode;	//移動中ノード
-		let p = WindowManager.getPos(e);	//座標の取得
-		let params: MovePoint = {
-			event: e,
-			nodePoint: { x: WindowManager.nodeX, y: WindowManager.nodeY },
-			basePoint: { x: WindowManager.baseX, y: WindowManager.baseY },
-			nowPoint: { x: p.x, y: p.y },
-			nodeSize: { width: node.clientWidth, height: node.clientHeight }
-		}
-		WindowManager.callEvent(node, 'move', params)
-	}
-}
-
-
-//各サイズ
-const FRAME_SIZE = 10	//フレーム枠のサイズ
-const TITLE_SIZE = 24	//タイトルバーのサイズ
 
 /**
  *ウインドウ管理用基本データ
-	*
-	* @interface JDATA
-	*/
+*
+* @interface JDATA
+*/
 export interface JDATA {
 	x: number
 	y: number
@@ -253,12 +69,12 @@ export interface JDATA {
 	frameSize: number
 	titleSize: number
 	redraw: boolean
-	parent: Window
+	parent: Window|null
 	orderTop: boolean
 	orderLayer: number
 	layoutFlag: boolean
-	clientArea: HTMLElement
-	style: string
+	clientArea: HTMLElement|null
+	style: string|null
 	visible: boolean
 	minimize: boolean
 	normalX: number
@@ -269,10 +85,10 @@ export interface JDATA {
 	padding: { x1: number, y1: number, x2: number, y2: number }
 	moveable: boolean
 	reshow: boolean
-	animation: {}
+	animation: { [key: string]: string }
 	animationEnable: boolean
 	noActive: boolean,
-	autoSizeNode: HTMLElement
+	autoSizeNode: HTMLElement|null
 }
 
 export interface WINDOW_EVENT_MAP {
@@ -283,6 +99,15 @@ export interface WINDOW_EVENT_MAP {
 	layouted: {}
 }
 
+/**
+ *ウインドウ作成用パラメータ
+ * frame Frameを作成するか
+ * title タイトルバーを表示するか
+ * layer 重ね合わせ順序
+ * overlap 領域をはみ出して表示するか
+ * @export
+ * @interface WINDOW_PARAMS
+ */
 export interface WINDOW_PARAMS {
 	frame?: boolean,
 	title?: boolean,
@@ -294,10 +119,10 @@ export interface WINDOW_PARAMS {
 
 /**
  *ウインドウ基本クラス
-	*
-	* @export
-	* @class Window
-	*/
+*
+* @export
+* @class Window
+*/
 export class Window {
 	private Events = new Map<string, any[]>()
 	private hNode: JNode
@@ -380,18 +205,11 @@ export class Window {
 		hNode.addEventListener("animationend", () => {
 			this.layout()
 		});
-		// hNode.addEventListener("animationiteration", () => {
-		// 	this.layout()
-		// });
-		// hNode.addEventListener("animationstart", () => {
-		// 	this.layout()
-		// });
-
 
 		//移動に備えて、必要な情報を収集
 		hNode.addEventListener("touchstart", this.onMouseDown.bind(this), { passive: false })
 		hNode.addEventListener("mousedown", this.onMouseDown.bind(this))
-		hNode.addEventListener('move', this.onMouseMove.bind(this))
+		hNode.addEventListener('move', (this.onMouseMove.bind(this)) as any)
 		//タイトルバーアイコンの機能設定
 		hNode.addEventListener("JWFclose", this.close.bind(this))
 		hNode.addEventListener("JWFmax", this.setMaximize.bind(this, true))
@@ -413,8 +231,8 @@ export class Window {
 	setJwfStyle(style: string) {
 		this.getClient().dataset.jwfStyle = style
 	}
-	getJwfStyle(): string {
-		return this.getNode().dataset.jwfStyle
+	getJwfStyle(): string|null {
+		return this.getNode().dataset.jwfStyle||null
 	}
 	//フレーム追加処理
 	private addFrame(titleFlag: boolean): void {
@@ -437,9 +255,9 @@ export class Window {
 
 
 		//フレームクリックイベントの処理
-		function onFrame() {
+		function onFrame(this:HTMLElement) {
 			if (WindowManager.frame == null)
-				WindowManager.frame = this.dataset.index
+				WindowManager.frame = this.dataset.index!=null?parseInt(this.dataset.index):null
 			//EDGEはここでイベントを止めないとテキスト選択が入る
 			//if (WindowManager.frame < 9)
 			//	if (e.preventDefault) e.preventDefault(); else e.returnValue = false
@@ -477,7 +295,7 @@ export class Window {
 
 	}
 
-	private onMouseDown(e) {
+	private onMouseDown(e: MouseEvent | TouchEvent) {
 		if (WindowManager.moveNode == null) {
 			this.foreground()
 			WindowManager.moveNode = this.hNode
@@ -494,7 +312,10 @@ export class Window {
 			e.preventDefault()
 		}
 	}
-	private onMouseMove(e) {
+	private onMouseMove(e:JWFEvent) {
+		if (WindowManager.frame==null)
+			return
+
 		let p = e.params as MovePoint
 		let x = this.getPosX()
 		let y = this.getPosY()
@@ -502,8 +323,9 @@ export class Window {
 		let width = this.getWidth()
 		let height = this.getHeight()
 
+
 		//選択されている場所によって挙動を変える
-		let frameIndex = parseInt(WindowManager.frame)
+		let frameIndex = WindowManager.frame
 		switch (frameIndex) {
 			case 0://上
 				y = p.nodePoint.y + p.nowPoint.y - p.basePoint.y
@@ -554,17 +376,19 @@ export class Window {
 		if (frameIndex < 9 || this.JData.moveable) {
 			p.event.preventDefault()
 			try{
-				window.getSelection().removeAllRanges()
+				const selection = window.getSelection()
+				if (selection)
+					selection.removeAllRanges()
 			}catch(e){}
 		}
 	}
 	/**
 	 *イベントの受け取り
-		*
-		* @param {string} type イベントタイプ
-		* @param {*} listener コールバックリスナー
-		* @memberof Window
-		*/
+	*
+	* @param {string} type イベントタイプ
+	* @param {*} listener コールバックリスナー
+	* @memberof Window
+	*/
 	addEventListener<K extends keyof WINDOW_EVENT_MAP>(type: K | string, listener: (this: Window, ev: WINDOW_EVENT_MAP[K]) => any): void {
 		let eventData = this.Events.get(type)
 		if (!eventData) {
@@ -579,12 +403,12 @@ export class Window {
 	}
 	/**
 	 *イベントの削除
-		*
-		* @template K
-		* @param {(K | string)} type イベントタイプ
-		* @param {(this: Window, ev: WINDOW_EVENT_MAP[K]) => any} listener コールバックリスナー
-		* @memberof Window
-		*/
+	*
+	* @template K
+	* @param {(K | string)} type イベントタイプ
+	* @param {(this: Window, ev: WINDOW_EVENT_MAP[K]) => any} listener コールバックリスナー
+	* @memberof Window
+	*/
 	removeEventListener<K extends keyof WINDOW_EVENT_MAP>(type: K | string, listener?: (this: Window, ev: WINDOW_EVENT_MAP[K]) => any): void {
 		if (listener == null) {
 			this.Events.delete(type)
@@ -604,11 +428,11 @@ export class Window {
 	}
 	/**
 	 *イベントの要求
-		*
-		* @param {string} type イベントタイプ
-		* @param {*} params パラメータ
-		* @memberof Window
-		*/
+	*
+	* @param {string} type イベントタイプ
+	* @param {*} params パラメータ
+	* @memberof Window
+	*/
 	callEvent<K extends keyof WINDOW_EVENT_MAP>(type: K | string, params: WINDOW_EVENT_MAP[K]|any) {
 		const eventData = this.Events.get(type)
 		if (eventData) {
@@ -619,20 +443,20 @@ export class Window {
 	}
 	/**
 	 *ウインドウのノードを得る
-		*
-		* @returns {HTMLElement} ウインドウノード
-		* @memberof Window
-		*/
+	*
+	* @returns {HTMLElement} ウインドウノード
+	* @memberof Window
+	*/
 	getNode(): HTMLElement {
 		return this.hNode
 	}
 	/**
 	 *ウインドウの移動
-		*
-		* @param {number} x
-		* @param {number} y
-		* @memberof Window
-		*/
+	*
+	* @param {number} x
+	* @param {number} y
+	* @memberof Window
+	*/
 	movePos(x: number, y: number): void {
 		this.JData.x = this.JData.x + parseInt(x as any)
 		this.JData.y = this.JData.y + parseInt(y as any)
@@ -643,11 +467,11 @@ export class Window {
 	}
 	/**
 	 *ウインドウの位置設定
-		*引数を省略した場合は親のサイズを考慮して中央へ
-		* @param {number} [x]
-		* @param {number} [y]
-		* @memberof Window
-		*/
+	*引数を省略した場合は親のサイズを考慮して中央へ
+	* @param {number} [x]
+	* @param {number} [y]
+	* @memberof Window
+	*/
 	setPos(x?: number, y?: number): void {
 		if (x == null) {
 			let parentWidth = this.getParentWidth()
@@ -673,10 +497,10 @@ export class Window {
 	}
 	/**
 	 *X座標の設定
-		*
-		* @param {number} x
-		* @memberof Window
-		*/
+	*
+	* @param {number} x
+	* @memberof Window
+	*/
 	setPosX(x: number): void {
 		x = parseInt(x as any)
 		if (this.JData.x === x)
@@ -686,10 +510,10 @@ export class Window {
 	}
 	/**
 	 *Y座標の設定
-		*
-		* @param {number} y
-		* @memberof Window
-		*/
+	*
+	* @param {number} y
+	* @memberof Window
+	*/
 	setPosY(y: number): void {
 		y = parseInt(y as any)
 		if (this.JData.x === y)
@@ -699,58 +523,58 @@ export class Window {
 	}
 	/**
 	 *親ウインドウの取得
-		*
-		* @returns {Window} 親ウインドウ
-		* @memberof Window
-		*/
-	getParent(): Window {
+	*
+	* @returns {Window} 親ウインドウ
+	* @memberof Window
+	*/
+	getParent(): Window|null {
 		return this.JData.parent
 	}
 	/**
 	 *クライアント領域のドラッグによる移動の許可
-		*
-		* @param {boolean} moveable true:許可 false:不許可
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} moveable true:許可 false:不許可
+	* @memberof Window
+	*/
 	setMoveable(moveable: boolean): void {
 		this.JData.moveable = moveable
 	}
 
 	/**
 	 *X座標を返す
-		*
-		* @returns {number}
-		* @memberof Window
-		*/
+	*
+	* @returns {number}
+	* @memberof Window
+	*/
 	getPosX(): number { return this.JData.x; }
 	/**
 	 *Y座標を返す
-		*
-		* @returns {number}
-		* @memberof Window
-		*/
+	*
+	* @returns {number}
+	* @memberof Window
+	*/
 	getPosY(): number { return this.JData.y; }
 	/**
 	 *ウインドウの幅を返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getWidth() { return this.JData.width; }
 	/**
 	 *ウインドウの高さを返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getHeight() { return this.JData.height; }
 	/**
 	 *ウインドウサイズの設定
-		*
-		* @param {number} width
-		* @param {number} height
-		* @memberof Window
-		*/
+	*
+	* @param {number} width
+	* @param {number} height
+	* @memberof Window
+	*/
 	setSize(width: number, height: number): void {
 		width = parseInt(width as any)
 		height = parseInt(height as any)
@@ -759,39 +583,41 @@ export class Window {
 		this.JData.width = width
 		this.JData.height = height
 		this.layout()
-		if (this.getParent())
-			this.getParent().layout()
+		const parent = this.getParent()
+		if (parent)
+			parent.layout()
 	}
 	/**
 	 *ウインドウの幅の設定
-		*
-		* @param {number} width
-		* @memberof Window
-		*/
+	*
+	* @param {number} width
+	* @memberof Window
+	*/
 	setWidth(width: number): void {
 		width = parseInt(width as any)
 		if (this.JData.width === width)
 			return
 		this.JData.width = width
 		this.layout()
-		if (this.getParent())
-			this.getParent().layout()
+		const parent = this.getParent()
+		if (parent)
+			parent.layout()
 	}
 
 	/**
 	 *ウインドウの高さの設定
-		*
-		* @param {number} height
-		* @memberof Window
-		*/
+	*
+	* @param {number} height
+	* @memberof Window
+	*/
 	setHeight(height: number): void {
 		height = parseInt(height as any)
 		if (this.JData.height === height)
 			return
 		this.JData.height = height
-		this.layout()
-		if (this.getParent())
-			this.getParent().layout()
+		const parent = this.getParent()
+		if (parent)
+			parent.layout()
 	}
 
 	/**
@@ -804,15 +630,15 @@ export class Window {
 	 * @memberof Window
 	 */
 
-	setPadding(x1: number, y1: number, x2: number, y2: number)
-	setPadding(all: number)
-	setPadding(p1, p2?, p3?, p4?) {
+	setPadding(x1: number, y1: number, x2: number, y2: number):void
+	setPadding(all: number): void
+	setPadding(p1: number, p2?: number, p3?: number, p4?: number) {
 		if (typeof p2 === 'undefined') {
 			this.JData.padding.x1 = p1;
 			this.JData.padding.y1 = p1;
 			this.JData.padding.x2 = p1;
 			this.JData.padding.y2 = p1;
-		} else {
+		} else if (typeof p3 !== 'undefined' && typeof p4 !== 'undefined'){
 			this.JData.padding.x1 = p1;
 			this.JData.padding.y1 = p2;
 			this.JData.padding.x2 = p3;
@@ -821,22 +647,22 @@ export class Window {
 	}
 	/**
 	 *配置時のマージン設定
-		*
-		* @param {number} x1
-		* @param {number} y1
-		* @param {number} x2
-		* @param {number} y2
-		* @memberof Window
-		*/
-	setMargin(x1: number, y1: number, x2: number, y2: number)
-	setMargin(all: number)
-	setMargin(p1, p2?, p3?, p4?) {
+	*
+	* @param {number} x1
+	* @param {number} y1
+	* @param {number} x2
+	* @param {number} y2
+	* @memberof Window
+	*/
+	setMargin(x1: number, y1: number, x2: number, y2: number): void
+	setMargin(all: number): void
+	setMargin(p1: number, p2?: number, p3?: number, p4?: number) {
 		if (typeof p2 === 'undefined') {
 			this.JData.margin.x1 = p1;
 			this.JData.margin.y1 = p1;
 			this.JData.margin.x2 = p1;
 			this.JData.margin.y2 = p1;
-		} else {
+		} else if (typeof p3 !== 'undefined' && typeof p4 !== 'undefined') {
 			this.JData.margin.x1 = p1;
 			this.JData.margin.y1 = p2;
 			this.JData.margin.x2 = p3;
@@ -845,28 +671,28 @@ export class Window {
 	}
 	/**
 	 *ウインドウの可視状態の取得
-		*
-		* @returns {boolean}
-		* @memberof Window
-		*/
+	*
+	* @returns {boolean}
+	* @memberof Window
+	*/
 	isVisible(): boolean {
 		if (!this.JData.visible)
 			return false;
-		if (this.getParent())
-			return this.getParent().isVisible();
+		const parent = this.getParent()
+		if (parent)
+			return parent.isVisible();
 		return true;
 	}
 
 	/**
 	 *ウインドウの可視状態の設定
-		*
-		* @param {boolean} flag
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} flag
+	* @memberof Window
+	*/
 	setVisible(flag: boolean) {
 		const node = this.getNode()
 		this.JData.visible = flag;
-
 
 		if (flag) {
 			node.style.display = '';
@@ -905,35 +731,37 @@ export class Window {
 				animationEnd.bind(node)()
 			}
 		}
-		if (this.getParent())
-			this.getParent().layout();
+		const parent = this.getParent()
+		if (parent)
+			parent.layout();
 
 	}
 	/**
 	 *ウインドウの重ね合わせを最上位に設定
-		*
-		* @param {boolean} flag
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} flag
+	* @memberof Window
+	*/
 	setOrderTop(flag: boolean): void {
 		this.JData.orderTop = flag
-		if (this.getParent())
-			this.getParent().layout()
+		const parent = this.getParent()
+		if (parent)
+			parent.layout()
 	}
 	/**
 	 *ウインドウの重ね合わせ順位の設定
-		*値が大きいほど上位
-		* @param {number} level デフォルト:0 FrameWindow:10
-		* @memberof Window
-		*/
+	*値が大きいほど上位
+	* @param {number} level デフォルト:0 FrameWindow:10
+	* @memberof Window
+	*/
 	setOrderLayer(level: number): void {
 		this.JData.orderLayer = level
 	}
 	/**
 	 *レイアウトの再構成要求
-		*
-		* @memberof Window
-		*/
+	*
+	* @memberof Window
+	*/
 	layout(): void {
 		if (this.JData.layoutFlag)
 			return
@@ -942,6 +770,12 @@ export class Window {
 		WindowManager.layout(false)
 		this.JData.layoutFlag = false
 	}
+	/**
+	 *ウインドウをアクティブにする(重ね合わせ順序は変更しない)
+	 *
+	 * @param {boolean} [flag]
+	 * @memberof Window
+	 */
 	active(flag?: boolean) {
 		if (!this.JData.noActive)
 			this.getNode().dataset.jwfActive = (flag || flag == null) ? 'true' : 'false'
@@ -949,10 +783,10 @@ export class Window {
 
 	/**
 	 *親のクライアント領域を返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getParentWidth() {
 		const node = this.hNode
 		if (node.style.position === 'fixed')
@@ -964,10 +798,10 @@ export class Window {
 	}
 	/**
 	 *親のクライアント領域を返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getParentHeight() {
 		const node = this.hNode
 		if (node.style.position === 'fixed')
@@ -1022,10 +856,10 @@ export class Window {
 	}
 	/**
 	 *位置やサイズの確定処理
-		*非同期で必要なときに呼び出されるので、基本的には直接呼び出さないこと
-		* @param {boolean} flag true:強制 false:必要なら
-		* @memberof Window
-		*/
+	*非同期で必要なときに呼び出されるので、基本的には直接呼び出さないこと
+	* @param {boolean} flag true:強制 false:必要なら
+	* @memberof Window
+	*/
 	onLayout(flag: boolean): void {
 		if (flag || this.JData.redraw) {
 			//this.onMeasure(true)			//直下の子リスト
@@ -1043,20 +877,20 @@ export class Window {
 		}
 
 		let client = this.getClient()
-		let nodes = []
+		let nodes: JNode[] = []
 		for (let i = 0; i < client.childNodes.length; i++) {
-			let node = client.childNodes[i] as HTMLElement
-			if (node.dataset && node.dataset.jwf === "Window")
+			let node = client.childNodes[i] as HTMLElement | JNode
+			if (('Jwf' in node) && node.dataset && node.dataset.jwf === "Window")
 				nodes.push(node)
 		}
 		let count = nodes.length
 
 		//配置順序リスト
 		nodes.sort(function (anode: JNode, bnode: JNode) {
-			const priority = { top: 10, bottom: 10, left: 8, right: 8, client: 5 }
-			const a = anode.Jwf.JData
-			const b = bnode.Jwf.JData
-			return priority[b.style] - priority[a.style]
+			const priority:{[key:string]:number} = { top: 10, bottom: 10, left: 8, right: 8, client: 5 }
+			const a = anode.Jwf.JData.style as string
+			const b = bnode.Jwf.JData.style as string
+			return priority[b] - priority[a]
 		})
 
 		const padding = this.JData.padding
@@ -1111,10 +945,10 @@ export class Window {
 		this.callEvent('layouted', {})
 	}
 	private orderSort(client: HTMLElement) {
-		let nodes = []
+		let nodes:JNode[] = []
 		for (let i = 0; i < client.childNodes.length; i++) {
-			let node = client.childNodes[i] as HTMLElement
-			if (node.dataset && node.dataset.jwf === "Window")
+			let node = client.childNodes[i] as HTMLElement | JNode
+			if (('Jwf' in node) && node.dataset && node.dataset.jwf === "Window")
 				nodes.push(node)
 		}
 		//重ね合わせソート
@@ -1128,27 +962,35 @@ export class Window {
 			let layer = a.orderLayer - b.orderLayer
 			if (layer)
 				return layer
-			return parseInt(anode.style.zIndex) - parseInt(bnode.style.zIndex)
+			const aIndex = (anode.style.zIndex) as string
+			const bIndex = (bnode.style.zIndex) as string
+			return parseInt(aIndex) - parseInt(bIndex)
 		})
 
 		//Zオーダーの再附番
 		for (let i = 0; i < nodes.length; i++) {
-			nodes[i].style.zIndex = i
+			nodes[i].style.zIndex = i.toString()
 		}
 	}
+	/**
+	 *ウインドウの表示/非表示
+	 *
+	 * @param {boolean} flag true:表示 false:非表示
+	 * @memberof Window
+	 */
 	show(flag: boolean): void {
 		if (flag == null || flag) {
 			this.JData.reshow = true
 		} else {
-			//this.hNode.style.visibility = 'hidden'
+			this.hNode.style.visibility = 'hidden'
 		}
 	}
 	/**
-	 *ウインドウの重ね合わせ順位を上位に持って行く
-		*
-		* @param {boolean} [flag] ウインドウをアクティブにするかどうか
-		* @memberof Window
-		*/
+	*ウインドウの重ね合わせ順位を上位に持って行く
+	*
+	* @param {boolean} [flag] ウインドウをアクティブにするかどうか
+	* @memberof Window
+	*/
 	foreground(flag?: boolean): void {
 		if (this.JData.noActive)
 			return
@@ -1185,31 +1027,31 @@ export class Window {
 
 	/**
 	 *クライアント領域のスクロールの可否
-		*
-		* @param {boolean} flag
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} flag
+	* @memberof Window
+	*/
 	setScroll(flag: boolean): void {
 		this.getClient().style.overflow = flag ? 'auto' : 'hidden'
 	}
 	/**
 	 *クライアント領域のスクロールが有効かどうか
-		*
-		* @returns {boolean}
-		* @memberof Window
-		*/
+	*
+	* @returns {boolean}
+	* @memberof Window
+	*/
 	isScroll(): boolean {
 		return this.getClient().style.overflow === 'auto'
 	}
 	/**
 	 *ウインドウを閉じる
-		*
-		* @memberof Window
-		*/
+	*
+	* @memberof Window
+	*/
 	close(): void {
 		const that = this
-		function animationEnd() {
-			let nodes = this.querySelectorAll('[data-jwf="Window"]') as JNode[]
+		function animationEnd(this:HTMLElement) {
+			let nodes: NodeListOf<JNode> = this.querySelectorAll('[data-jwf="Window"]')
 			let count = nodes.length
 			for (let i = 0; i < count; i++) {
 				nodes[i].Jwf.layout()
@@ -1231,23 +1073,23 @@ export class Window {
 	}
 	/**
 	 *アニメーションの設定
-		*
-		* @param {string} name アニメーション名
-		* @param {string} value アニメーションパラメータ
-		* @memberof Window
-		*/
+	*
+	* @param {string} name アニメーション名
+	* @param {string} value アニメーションパラメータ
+	* @memberof Window
+	*/
 	setAnimation(name: string, value: string): void {
 		this.JData.animation[name] = value
 	}
 	/**
 	 *絶対位置の取得
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getAbsX() {
-		var px = this.JData.x;
-		var parent: Window = this;
+		let px = this.JData.x;
+		let parent: Window|null = this;
 		while (parent = parent.getParent()) {
 			px += this.getClient().offsetLeft + parent.getClientX() + parent.JData.x;
 		}
@@ -1261,7 +1103,7 @@ export class Window {
 	*/
 	getAbsY() {
 		var py = this.JData.y;
-		var parent: Window = this;
+		var parent: Window|null = this;
 		while (parent = parent.getParent()) {
 			py += this.getClient().offsetTop + parent.getClientX() + parent.JData.y;
 		}
@@ -1270,41 +1112,41 @@ export class Window {
 
 	/**
 	 *クライアントノードを返す
-		*WindowクラスはgetNode()===getClient()
-		*FrameWindowはgetNode()!==getClient()
-		* @returns {HTMLElement}
-		* @memberof Window
-		*/
+	*WindowクラスはgetNode()===getClient()
+	*FrameWindowはgetNode()!==getClient()
+	* @returns {HTMLElement}
+	* @memberof Window
+	*/
 	getClient(): HTMLElement {
-		return this.JData.clientArea
+		return this.JData.clientArea as HTMLElement
 	}
 	/**
 	 *クライアント領域の基準位置を返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getClientX(): number {
 		return this.JData.padding.x1;
 	}
 
 	/**
 	 *クライアント領域の基準位置を返す
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	getClientY(): number {
 		return this.JData.padding.y1;
 	}
 
 	/**
 	 *クライアントサイズを元にウインドウサイズを設定
-		*
-		* @param {number} width
-		* @param {number} height
-		* @memberof Window
-		*/
+	*
+	* @param {number} width
+	* @param {number} height
+	* @memberof Window
+	*/
 	setClientSize(width: number, height: number) {
 		this.setSize(
 			width + this.JData.frameSize * 2 + this.JData.padding.x1 + this.JData.padding.x2,
@@ -1313,51 +1155,52 @@ export class Window {
 
 	/**
 	 *クライアントサイズを元にウインドウサイズを設定
-		*
-		* @param {number} width
-		* @memberof Window
-		*/
+	*
+	* @param {number} width
+	* @memberof Window
+	*/
 	setClientWidth(width: number) {
 		this.setWidth(width + this.JData.frameSize * 2 + this.JData.padding.x1 + this.JData.padding.x2)
 	}
 	/**
 	 *クライアントサイズを元にウインドウサイズを設定
-		*
-		* @param {number} height
-		* @memberof Window
-		*/
+	*
+	* @param {number} height
+	* @memberof Window
+	*/
 	setClientHeight(height: number) {
 		this.setWidth(height + this.JData.frameSize + this.JData.padding.y1 + this.JData.padding.y2 * 2 + this.JData.titleSize)
 	}
 	/**
 	 *クライアントサイズを取得
-		*
-		* @returns {number}
-		* @memberof Window
-		*/
+	*
+	* @returns {number}
+	* @memberof Window
+	*/
 	getClientWidth(): number {
 		return this.getWidth() - this.JData.frameSize * 2 - this.JData.padding.x1 - this.JData.padding.x2
 
 	}
 	/**
 	 *クライアントサイズを取得
-		*
-		* @returns {number}
-		* @memberof Window
-		*/
+	*
+	* @returns {number}
+	* @memberof Window
+	*/
 	getClientHeight(): number {
 		return this.getHeight() - this.JData.frameSize * 2 - this.JData.padding.y1 - this.JData.padding.y2 - this.JData.titleSize
 	}
 
 	/**
 	 *子ノードの追加
-		*
-		* @param {Window} child 子ウインドウ
-		* @param {('left' | 'right' | 'top' | 'bottom' | 'client' | null)} [style] ドッキング位置
-		* @memberof Window
-		*/
-	addChild(child: Window, style?: 'left' | 'right' | 'top' | 'bottom' | 'client' | null): void {
-		child.setChildStyle(style)
+	*
+	* @param {Window} child 子ウインドウ
+	* @param {('left' | 'right' | 'top' | 'bottom' | 'client' | null)} [style] ドッキング位置
+	* @memberof Window
+	*/
+	addChild(child: Window, style?: 'left' | 'right' | 'top' | 'bottom' | 'client' |null): void {
+		if (style)
+			child.setChildStyle(style)
 		child.JData.parent = this
 		this.getClient().appendChild(child.hNode)
 		this.layout()
@@ -1365,11 +1208,11 @@ export class Window {
 
 	/**
 	 *ドッキングスタイルの設定
-		*
-		* @param {('left' | 'right' | 'top' | 'bottom' | 'client' | null)} style ドッキング位置
-		* @memberof Window
-		*/
-	setChildStyle(style: 'left' | 'right' | 'top' | 'bottom' | 'client' | null): void {
+	*
+	* @param {('left' | 'right' | 'top' | 'bottom' | 'client' | null)} style ドッキング位置
+	* @memberof Window
+	*/
+	setChildStyle(style: 'left' | 'right' | 'top' | 'bottom' | 'client'|null): void {
 		this.JData.style = style
 		let parent = this.getParent()
 		if (parent)
@@ -1377,9 +1220,9 @@ export class Window {
 	}
 	/**
 	 *子ウインドウを全て切り離す
-		*
-		* @memberof Window
-		*/
+	*
+	* @memberof Window
+	*/
 	removeChildAll() {
 		var client = this.getClient()
 		var childList = client.childNodes;
@@ -1395,11 +1238,11 @@ export class Window {
 
 	/**
 	 *子ウインドウを切り離す
-		*
-		* @param {Window} child
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @param {Window} child
+	* @returns
+	* @memberof Window
+	*/
 	removeChild(child: Window) {
 		if (child.getParent() !== this)
 			return;
@@ -1409,28 +1252,28 @@ export class Window {
 	}
 	/**
 	 *自動サイズ調整の状態を取得
-		*
-		* @returns
-		* @memberof Window
-		*/
+	*
+	* @returns
+	* @memberof Window
+	*/
 	isAutoSize() {
 		return this.getClient().dataset.scale === 'auto'
 	}
 	/**
 	 *自動サイズ調整を設定
-		*
-		* @param {boolean} scale
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} scale
+	* @memberof Window
+	*/
 	setAutoSize(scale: boolean) {
 		this.getClient().dataset.scale = scale ? 'auto' : ''
 	}
 	/**
 	 *タイトル設定
-		*
-		* @param {string} title
-		* @memberof Window
-		*/
+	*
+	* @param {string} title
+	* @memberof Window
+	*/
 	setTitle(title: string): void {
 		if (this.hNode.childNodes[9]) {
 			this.hNode.childNodes[9].childNodes[0].textContent = title
@@ -1438,26 +1281,26 @@ export class Window {
 	}
 	/**
 	 *タイトル取得
-		*
-		* @returns {string}
-		* @memberof Window
-		*/
+	*
+	* @returns {string}
+	* @memberof Window
+	*/
 	getTitle(): string {
 		if (this.hNode.childNodes[9]) {
-			return this.hNode.childNodes[9].childNodes[0].textContent
+			return this.hNode.childNodes[9].childNodes[0].textContent||''
 		}
 		return ""
 	}
 
 	/**
 	 *ウインドウの最大化
-		*
-		* @param {boolean} flag
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} flag
+	* @memberof Window
+	*/
 	setMaximize(flag: boolean): void {
 		let that = this
-		function animationEnd() {
+		function animationEnd(this:HTMLElement) {
 			this.style.minWidth = null
 			this.style.minHeight = that.JData.titleSize + "px";
 			this.removeEventListener("animationend", animationEnd)
@@ -1500,10 +1343,10 @@ export class Window {
 
 	/**
 	 *ウインドウの最小化
-		*
-		* @param {boolean} flag
-		* @memberof Window
-		*/
+	*
+	* @param {boolean} flag
+	* @memberof Window
+	*/
 	setMinimize(flag: boolean): void {
 		var that = this
 		this.hNode.addEventListener("animationend", function () { that.layout() })
@@ -1531,21 +1374,4 @@ export class Window {
 	}
 
 
-}
-
-/**
- *フレームウインドウクラス
-	*
-	* @export
-	* @class FrameWindow
-	* @extends {Window}
-	*/
-export class FrameWindow extends Window {
-	constructor(param?) {
-		let p = { frame: true, title: true, layer: 10 }
-		if (param)
-			Object.assign(p, param)
-		super(p)
-		this.setOverlap(true)
-	}
 }

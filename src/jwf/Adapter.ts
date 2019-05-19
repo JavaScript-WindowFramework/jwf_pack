@@ -9,8 +9,8 @@ interface FunctionSet {
 }
 
 interface AdapterFormat {
-	globalHash: string		//ブラウザ共通セッションキー
-	sessionHash: string		//タブ用セッションキー
+	globalHash: string|null		//ブラウザ共通セッションキー
+	sessionHash: string|null		//タブ用セッションキー
 	functions: 				//命令格納用
 	{
 		function: string	//命令
@@ -18,23 +18,57 @@ interface AdapterFormat {
 	}[]
 }
 
+export interface AdapterResult {
+	value: { [keys: string]: any } | null
+	error: string | null
+}
+
+/**
+ *Ajax通信用アダプタ
+ *
+ * @export
+ * @class Adapter
+ */
 export class Adapter {
-	handle: number
+	handle: number|null
 	scriptUrl: string
-	globalHash: string
+	globalHash: string|null
 	keyName: string
 	functionSet: FunctionSet[] = []
 
 
 
+	/**
+	 *Creates an instance of Adapter.
+	 * @param {string} [scriptUrl] 通信先アドレス
+	 * @param {string} [keyName] セッション情報記憶用キー
+	 * @memberof Adapter
+	 */
 	constructor(scriptUrl?: string, keyName?: string) {
 		this.scriptUrl = scriptUrl||'./'
 		this.keyName = keyName || 'Session'
+		this.handle = null
+		this.globalHash = null
 	}
 
-	exec(functions: any[][]): Promise<any>
-	exec(funcName: string, ...params): Promise<any>
-	exec(v1, ...v2): Promise<any> {
+	/**
+	 *複数のファンクションの実行
+	 *
+	 * @param {FunctionData[][]} functions
+	 * @returns {Promise<any>}
+	 * @memberof Adapter
+	 */
+	exec(functions: FunctionData[][]): Promise<any>
+	/**
+	 *単一ファンクションの実行
+	 *
+	 * @param {string} funcName ファンクション名
+	 * @param {...any[]} params パラメータ
+	 * @returns {Promise<any>}
+	 * @memberof Adapter
+	 */
+	exec(funcName: string, ...params:any[]): Promise<any[]>
+	exec(v1: FunctionData[][]|string, ...v2: any[]): Promise<any> {
 		let functionSet: FunctionSet
 		if (Array.isArray(v1)) {
 			const functions: FunctionData[] = []
@@ -54,12 +88,12 @@ export class Adapter {
 		this.callSend()
 		return promise
 	}
-	callSend() {
+	private callSend() {
 		if (!this.handle) {
 			this.handle = window.setTimeout(() => { this.send() }, 0)
 		}
 	}
-	send() {
+	private send() {
 		this.handle = null
 		const globalHash = localStorage.getItem(this.keyName)
 		const sessionHash = sessionStorage.getItem(this.keyName)
@@ -74,7 +108,7 @@ export class Adapter {
 			for (let func of funcs.functions)
 				params.functions.push({ function: func.name, params: func.params })
 		}
-		Adapter.sendJson(this.scriptUrl + '?cmd=exec', params, (res) => {
+		Adapter.sendJson(this.scriptUrl + '?cmd=exec', params, (res: { globalHash: string, sessionHash:string,results:any}) => {
 			if (res == null) {
 				for (let funcs of functionSet) {
 					console.error('通信エラー')
@@ -112,14 +146,14 @@ export class Adapter {
 			}
 		})
 	}
-	static sendJsonAsync(url: string, data?: any, headers?: { [key: string]: string }){
+	private static sendJsonAsync(url: string, data?: any, headers?: { [key: string]: string }){
 		return new Promise((resolve)=>{
-			Adapter.sendJson(url,data,(value)=>{
+			Adapter.sendJson(url,data,(value:any)=>{
 				resolve(value)
 			}, headers)
 		})
 	}
-	static sendJson(url: string, data: any, proc: Function, headers?: { [key: string]: string }) : Promise<any>{
+	private static sendJson(url: string, data: any, proc: Function, headers?: { [key: string]: string }){
 		const req = new XMLHttpRequest()
 
 		//ネイティブでJSON変換が可能かチェック
@@ -153,7 +187,9 @@ export class Adapter {
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
 		if (headers) {
 			for (let index in headers) {
-				req.setRequestHeader(index, sessionStorage.getItem(headers[index]));
+				const value = sessionStorage.getItem(headers[index])
+				if (value)
+					req.setRequestHeader(index, value);
 			}
 		}
 		req.send(data==null?null:JSON.stringify(data));

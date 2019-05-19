@@ -1,4 +1,4 @@
 package-lock.json
 node_modules
-dist/
-!webpack.config.js
+/dist/
+/doc/
