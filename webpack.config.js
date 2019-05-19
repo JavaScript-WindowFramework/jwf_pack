@@ -9,7 +9,7 @@ module.exports = {
 	},
 	devServer: {
 		contentBase: path.join(__dirname, 'dist'),
-		host: "0.0.0.0"
+		host: "localhost"
 	},
 	devtool: 'source-map',
 	module: {

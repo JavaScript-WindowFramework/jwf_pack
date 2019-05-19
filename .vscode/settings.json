@@ -1,7 +1,0 @@
-{
-	"easysass.formats": [{
-		"format": "expanded",
-		"extension": ".css"
-	}],
-	"easysass.targetDir": "./local_modules/jwf/dist/css"
-}
