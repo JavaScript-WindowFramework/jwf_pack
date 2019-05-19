@@ -1,14 +1,12 @@
 import * as JWF from 'javascript-window-framework'
 //ページ読み込み時に実行する処理を設定
-addEventListener("DOMContentLoaded", Main)
-
-function Main() {
+addEventListener("DOMContentLoaded", ()=>{
 	Sample001()
 	Sample002()
 	Sample003()
 	Sample004()
 	Sample005()
-}
+})
 
 function Sample001() {
 	const win = new JWF.FrameWindow()			//フレームウインドウの作成
@@ -94,7 +92,7 @@ function Sample005() {
 			item.addItem("サブアイテム" + j + "-" + i, false)
 	}
 	//アイテムが選択された場合のイベント
-	tree.addEventListener('itemSelect', function (e) {
+	tree.addEventListener('itemSelect', (e)=> {
 		const value = e.item.getItemText()
 		if (value) {
 			const no = list.getItemCount()
