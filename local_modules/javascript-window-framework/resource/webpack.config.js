@@ -24,7 +24,10 @@ module.exports = {
 					'css-loader',
 					'sass-loader'
 				]
-			}
+			}, {
+				test: /\.(jpg|png|svg|gif)$/,
+				loaders: 'url-loader'
+			},
 		]
 	},
 	resolve: {
