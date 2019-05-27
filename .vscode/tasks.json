@@ -3,20 +3,41 @@
 	// https://go.microsoft.com/fwlink/?LinkId=733558 をご覧ください
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "npm",
-			"script": "watch",
-			"problemMatcher": []
-		},
-		{
-			"type": "npm",
-			"script": "start",
-			"problemMatcher": []
-		},
-		{
-			"type": "npm",
-			"script": "pm2_start",
-			"problemMatcher": []
-		}
-	]
+    {
+      "type": "npm",
+      "script": "watch",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "pm2_start",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "build-jwf",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "path": "local_modules/javascript-window-framework/",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "watch-main",
+      "problemMatcher": []
+    }
+  ]
 }
