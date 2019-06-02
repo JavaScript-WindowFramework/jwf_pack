@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^12.0.2",
+    "@types/node": "^12.0.4",
     "javascript-window-framework": "file:local_modules/javascript-window-framework",
     "source-map-loader": "^0.2.4"
   },
@@ -26,11 +26,11 @@
     "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
-    "ts-loader": "^6.0.1",
-    "typescript": "^3.4.5",
+    "ts-loader": "^6.0.2",
+    "typescript": "^3.5.1",
     "url-loader": "^1.1.2",
-    "webpack": "^4.31.0",
+    "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.4.1"
+    "webpack-dev-server": "^3.5.1"
   }
 }
