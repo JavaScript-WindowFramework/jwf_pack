@@ -140,8 +140,6 @@ export class ImageButton extends Window {
     nodeImg.addEventListener(
       "load",
       (): void => {
-        // eslint-disable-next-line no-console
-        console.log("load %d %d", nodeImg.naturalWidth, nodeImg.naturalHeight);
         this.layout();
       }
     );
