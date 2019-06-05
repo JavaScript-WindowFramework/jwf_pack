@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/class-name-casing */
 /* eslint-disable no-dupe-class-members */
+import "./scss/Window.scss";
 import { WindowManager } from "./WindowManager";
 
 //各サイズ
@@ -109,7 +110,6 @@ export interface JDATA {
 }
 
 export interface WINDOW_EVENT_MAP {
-  unknown: unknown;
   active: { active: boolean };
   closed: {};
   layout: {};
