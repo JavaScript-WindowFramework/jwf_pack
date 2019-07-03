@@ -1,28 +1,28 @@
 {
   "name": "jwf_pack",
   "version": "1.0.0",
-  "description": "",
+  "description": "- JavaScript Window Framework 開発用パック",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build-jwf": "npx webpack --config ./local_modules/javascript-window-framework/src/webpack.config.js",
-    "build": "npx webpack",
-    "watch-main": "npx webpack -b -w",
-    "watch-jwf": "npx webpack -w --config local_modules/javascript-window-framework/src/webpack.config.js",
-    "start": "npx webpack-dev-server"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavaScript-WindowFramework/jwf_pack.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JavaScript-WindowFramework/jwf_pack/issues"
+  },
+  "homepage": "https://github.com/JavaScript-WindowFramework/jwf_pack#readme",
   "dependencies": {
-    "@types/node": "^12.0.10",
     "javascript-window-framework": "file:local_modules/javascript-window-framework"
   },
   "devDependencies": {
     "css-loader": "^3.0.0",
     "dts-bundle": "^0.7.3",
-    "es6-promise": "^4.2.8",
-    "hard-source-webpack-plugin": "^0.13.1",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
