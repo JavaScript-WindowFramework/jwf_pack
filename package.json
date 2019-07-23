@@ -21,17 +21,17 @@
     "javascript-window-framework": "file:local_modules/javascript-window-framework"
   },
   "devDependencies": {
-    "css-loader": "^3.0.0",
+    "css-loader": "^3.1.0",
     "dts-bundle": "^0.7.3",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
     "ts-loader": "^6.0.4",
-    "typescript": "^3.5.2",
-    "url-loader": "^2.0.1",
-    "webpack": "^4.35.2",
-    "webpack-cli": "^3.3.5",
+    "typescript": "^3.5.3",
+    "url-loader": "^2.1.0",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2"
   }
 }
